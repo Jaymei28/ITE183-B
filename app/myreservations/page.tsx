@@ -15,7 +15,7 @@ const MyReservationsPage = () => {
                                     fill
                                     src="/beach_1.jpg"
                                     alt="Beach house"
-                                    className="hover:scale-110 obeject-cover transition h-full w-full"
+                                    className="hover:scale-110 object-cover transition h-full w-full"
                                 />
                             </div>
                         </div>
