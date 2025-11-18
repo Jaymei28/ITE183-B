@@ -1,9 +1,9 @@
 'use client';
 
-import Modal from "../../Modal";
+import Modal from "./Modal";
 import { useState } from "react";
 import useLoginModal from "@/app/hooks/useLoginModal";
-import CustomButton from "@/app/components/forms/CustomButton";
+import CustomButton from "../forms/CustomButton";
 
 
 const LoginModal = () => {
