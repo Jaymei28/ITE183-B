@@ -25,7 +25,7 @@ const SignupModal = () => {
 
     const submitSignup = async () => {
         const formData = {
-            email: email,
+            email: email.trim().toLowerCase(),
             password1: password1,
             password2: password2
         }
