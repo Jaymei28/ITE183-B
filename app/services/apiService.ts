@@ -1,52 +1,112 @@
-const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:8000';
+import { getAccessToken } from "../lib/actions";
 
 const apiService = {
-  get: async function (url: string): Promise<any> {
-    console.log('get', url);
+    get: async function (url: string): Promise<any> {
+        console.log('get', url);
 
-    return new Promise((resolve, reject) => {
-      fetch(`${API_HOST}${url}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      })
-        .then((response) => response.json())
-        .then((json) => {
-          console.log('Response:', json);
-          resolve(json);
+        const token = await getAccessToken();
+
+        return new Promise((resolve, reject) => {
+            fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => response.json())
+                .then((json) => {
+                    console.log('Response:', json);
+
+                    resolve(json);
+                })
+                .catch((error => {
+                    reject(error);
+                }))
         })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
+    },
 
-  post: async function(url: string, data: any): Promise<any> {
-    console.log('post', url, data);
+    post: async function(url: string, data: any): Promise<any> {
+        console.log('post', url, data);
 
-    return new Promise((resolve, reject) => {
-      fetch(`${API_HOST}${url}`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-       
-      })
-        .then((response) => response.json())
-        .then((json) => {
-          console.log('Response:', json);
-          resolve(json);
+        const token = await getAccessToken();
+
+        // Check if data is FormData
+        const isFormData = data instanceof FormData;
+        
+        const headers: HeadersInit = {
+            'Authorization': `Bearer ${token}`
+        };
+        
+        // Only set Content-Type for JSON, not for FormData (browser sets it automatically)
+        if (!isFormData) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        return new Promise((resolve, reject) => {
+            fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+                method: 'POST',
+                body: isFormData ? data : JSON.stringify(data),
+                headers: headers
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(json => {
+                            console.log('Error Response:', json);
+                            resolve(json);
+                        }).catch(() => {
+                            resolve({ error: `HTTP ${response.status}: ${response.statusText}` });
+                        });
+                    }
+                    return response.json();
+                })
+                .then((json) => {
+                    console.log('Response:', json);
+
+                    resolve(json);
+                })
+                .catch((error => {
+                    console.error('Fetch error:', error);
+                    reject(error);
+                }))
         })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
+    },
 
-};
+    postWithoutToken: async function(url: string, data: any): Promise<any> {
+        console.log('post', url, data);
+
+        return new Promise((resolve, reject) => {
+            fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(json => {
+                            console.log('Error Response:', json);
+                            resolve(json);
+                        }).catch(() => {
+                            resolve({ detail: `HTTP ${response.status}: ${response.statusText}` });
+                        });
+                    }
+                    return response.json();
+                })
+                .then((json) => {
+                    console.log('Response:', json);
+
+                    resolve(json);
+                })
+                .catch((error => {
+                    console.error('Fetch error:', error);
+                    reject(error);
+                }))
+        })
+    }
+}
 
 export default apiService;

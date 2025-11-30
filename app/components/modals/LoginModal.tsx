@@ -17,21 +17,35 @@ const LoginModal = () => {
     const [errors, setErrors] = useState<string[]>([]);
 
     const submitLogin = async () => {
+        setErrors([]);
+        
         const formData = {
             email: email,
             password: password
         }
 
-        const response = await apiService.post('/api/auth/login/', formData)
+        const response = await apiService.postWithoutToken('/api/auth/login/', formData)
 
         if (response.access) {
+            try {
+                localStorage.setItem('access', response.access);
+                localStorage.setItem('refresh', response.refresh);
+                localStorage.setItem('user', JSON.stringify(response.user));
+            } catch {}
             handleLogin(response.user.pk, response.access, response.refresh);
 
             loginModal.close();
 
             router.push('/')
         } else {
-            setErrors(response.non_field_errors);
+            // Handle different error response formats
+            if (response.detail) {
+                setErrors([response.detail]);
+            } else if (response.non_field_errors) {
+                setErrors(Array.isArray(response.non_field_errors) ? response.non_field_errors : [response.non_field_errors]);
+            } else {
+                setErrors(['Login failed. Please check your credentials.']);
+            }
         }
     }
 
@@ -45,7 +59,7 @@ const LoginModal = () => {
 
                 <input onChange={(e) => setPassword(e.target.value)} placeholder="Your password" type="password" className="w-full h-[54px] px-4 border border-gray-300 rounded-xl" />
             
-                {errors.map((error, index) => {
+                {errors && errors.map((error, index) => {
                     return (
                         <div 
                             key={`error_${index}`}

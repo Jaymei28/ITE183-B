@@ -25,14 +25,19 @@ const SignupModal = () => {
 
     const submitSignup = async () => {
         const formData = {
-            email: email.trim().toLowerCase(),
+            email: email,
             password1: password1,
             password2: password2
         }
 
-        const response = await apiService.post('/api/auth/register/', formData);
+        const response = await apiService.postWithoutToken('/api/auth/register/', formData);
 
         if (response.access) {
+            try {
+                localStorage.setItem('access', response.access);
+                localStorage.setItem('refresh', response.refresh);
+                localStorage.setItem('user', JSON.stringify(response.user));
+            } catch {}
             handleLogin(response.user.pk, response.access, response.refresh);
 
             signupModal.close();
