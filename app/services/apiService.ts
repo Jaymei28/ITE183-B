@@ -15,13 +15,35 @@ const apiService = {
                     'Authorization': `Bearer ${token}`
                 }
             })
-                .then(response => response.json())
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        // If response is not JSON (e.g., HTML error page), return error
+                        return response.text().then(text => {
+                            console.error('Non-JSON response:', text.substring(0, 200));
+                            reject(new Error(`Server returned non-JSON response: ${response.status} ${response.statusText}`));
+                        });
+                    }
+                    
+                    if (!response.ok) {
+                        return response.json().then(json => {
+                            console.log('Error Response:', json);
+                            resolve(json);
+                        }).catch(() => {
+                            resolve({ error: `HTTP ${response.status}: ${response.statusText}` });
+                        });
+                    }
+                    
+                    return response.json();
+                })
                 .then((json) => {
-                    console.log('Response:', json);
-
-                    resolve(json);
+                    if (json) {
+                        console.log('Response:', json);
+                        resolve(json);
+                    }
                 })
                 .catch((error => {
+                    console.error('Fetch error:', error);
                     reject(error);
                 }))
         })
