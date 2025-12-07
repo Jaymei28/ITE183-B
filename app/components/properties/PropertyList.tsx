@@ -12,18 +12,25 @@ export type PropertyType = {
 }
 
 
-const PropertyList = () => {
+interface PropertyListProps {
+    landlord_id?: string;
+}
+
+const PropertyList = ({ landlord_id }: PropertyListProps) => {
     const [properties, setProperties] = useState<PropertyType[]>([]);
 
     const getProperties = async () => {
-        const json = await apiService.get('/api/properties/');
+        const url = landlord_id 
+            ? `/api/properties/?landlord_id=${landlord_id}`
+            : '/api/properties/';
+        const json = await apiService.get(url);
         console.log('json', json);
         setProperties(json.data);
     };  
 
         useEffect(() => {
             getProperties();
-            }, []); 
+            }, [landlord_id]); 
 
     return (
             <>
