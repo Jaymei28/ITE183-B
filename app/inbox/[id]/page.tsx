@@ -1,21 +1,16 @@
-import ConversationDetail from "@/app/components/inbox/ConversationDetail";
-import { getUserId, getAccessToken } from "@/app/lib/actions";
+import { getUserId } from "../../lib/actions";
 import apiService from "@/app/services/apiService";
+import ConversationDetail from "@/app/components/inbox/ConversationDetail";
 import { UserType } from "../page";
+import { getAccessToken } from "../../lib/actions";
 
 export type MessageType = {
     id: string;
+    name: string;
     body: string;
+    conversationId: string;
     sent_to: UserType;
-    created_by: UserType;
-    created_at_formatted: string;
-}
-
-export type ConversationDetailType = {
-    id: string;
-    users: UserType[];
-    messages: MessageType[];
-    modified_at: string;
+    created_by: UserType
 }
 
 const ConversationPage = async ({ params }: { params: Promise<{ id: string }> }) => {
@@ -31,14 +26,15 @@ const ConversationPage = async ({ params }: { params: Promise<{ id: string }> })
         )
     }
 
-    const conversation = await apiService.get(`/api/chat/${id}/`);
+    const conversation = await apiService.get(`/api/chat/${id}/`)
 
     return (
         <main className="max-w-[1500px] mx-auto px-6 pb-6">
             <ConversationDetail
-                conversation={conversation}
-                userId={userId}
                 token={token}
+                userId={userId}
+                messages={conversation.messages || []}
+                conversation={conversation}
             />
         </main>
     )
