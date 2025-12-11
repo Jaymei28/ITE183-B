@@ -90,8 +90,8 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
                     <div
                         key={index}
                         className={`w-[80%] py-4 px-6 rounded-xl ${message.created_by.id == userId
-                                ? 'ml-[20%] bg-blue-200'
-                                : 'bg-gray-200'
+                            ? 'ml-[20%] bg-blue-200'
+                            : 'bg-gray-200'
                             }`}
                     >
                         <p className="font-bold text-gray-500">
@@ -105,8 +105,8 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
                     <div
                         key={index}
                         className={`w-[80%] py-4 px-6 rounded-xl ${message.name === myUser?.name || message.name === myUser?.email
-                                ? 'ml-[20%] bg-blue-200'
-                                : 'bg-gray-200'
+                            ? 'ml-[20%] bg-blue-200'
+                            : 'bg-gray-200'
                             }`}
                     >
                         <p className="font-bold text-gray-500">{message.name}</p>
@@ -140,3 +140,5 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
 };
 
 export default ConversationDetail;
+
+

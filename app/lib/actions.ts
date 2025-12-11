@@ -39,6 +39,11 @@ export async function getUserId() {
     return userId ? userId : null
 }
 
+export async function getRefreshToken() {
+    const refreshToken = (await cookies()).get('session_refresh_token')?.value;
+    return refreshToken ? refreshToken : null;
+}
+
 export async function getAccessToken() {
     let accessToken = (await cookies()).get('session_access_token')?.value;
 
