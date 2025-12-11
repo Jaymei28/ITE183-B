@@ -40,7 +40,45 @@ export async function getUserId() {
 }
 
 export async function getAccessToken() {
-    let accessToken = (await cookies()).get('session_access_token')?.value
+    let accessToken = (await cookies()).get('session_access_token')?.value;
+
+    if (!accessToken) {
+        const refreshToken = (await cookies()).get('session_refresh_token')?.value;
+
+        if (refreshToken) {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/auth/token/refresh/`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        refresh: refreshToken
+                    })
+                });
+
+                if (response.ok) {
+                    const json = await response.json();
+
+                    if (json.access) {
+                        accessToken = json.access;
+
+                        (await cookies()).set('session_access_token', accessToken as string, {
+                            httpOnly: true,
+                            secure: false,
+                            maxAge: 60 * 60, // 60 minutes
+                            path: '/'
+                        });
+
+                        return accessToken;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to refresh token:', error);
+            }
+        }
+    }
 
     return accessToken;
 }

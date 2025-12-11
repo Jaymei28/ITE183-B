@@ -15,63 +15,72 @@ export type PropertyType = {
 
 interface PropertyListProps {
     landlord_id?: string;
+    favorites?: boolean;
 }
 
-const PropertyList = ({ landlord_id }: PropertyListProps) => {
+const PropertyList = ({ landlord_id, favorites }: PropertyListProps) => {
     const [properties, setProperties] = useState<PropertyType[]>([]);
 
     const markFavorite = (id: string, is_favorite: boolean) => {
         const tmpProperties = properties.map((property: PropertyType) => {
             if (property.id === id) {
-                property.is_favorite = is_favorite
-
                 if (is_favorite) {
                     console.log('property added to favorites', property.id)
                 } else {
                     console.log('removed from list', property.id)
                 }
+
+                return {
+                    ...property,
+                    is_favorite: is_favorite
+                }
             }
 
-            return property; 
+            return property;
         });
 
         setProperties(tmpProperties);
     }
 
     const getProperties = async () => {
-        const url = landlord_id 
-            ? `/api/properties/?landlord_id=${landlord_id}`
-            : '/api/properties/';
+        let url = '/api/properties/';
+
+        if (landlord_id) {
+            url += `?landlord_id=${landlord_id}`
+        } else if (favorites) {
+            url += '?is_favorites=true'
+        }
+
         const json = await apiService.get(url);
         console.log('json', json);
-        
+
         // Map favorites array to set is_favorite on each property
-        const favorites = json.favorites || [];
+        const favoritesList = json.favorites || [];
         const propertiesWithFavorites = json.data.map((property: PropertyType) => ({
             ...property,
-            is_favorite: favorites.includes(property.id)
+            is_favorite: favoritesList.includes(property.id)
         }));
-        
-        setProperties(propertiesWithFavorites);
-    };  
 
-        useEffect(() => {
-            getProperties();
-            }, [landlord_id]); 
+        setProperties(propertiesWithFavorites);
+    };
+
+    useEffect(() => {
+        getProperties();
+    }, [landlord_id, favorites]);
 
     return (
-            <>
+        <>
             {properties.map((property: any) => {
                 return (
-                <PropertyListItem
-                    key={property.id}
-                    property={property}
-                    markFavorite={(is_favorite: any) => markFavorite(property.id, is_favorite)}
-                />
+                    <PropertyListItem
+                        key={property.id}
+                        property={property}
+                        markFavorite={(is_favorite: any) => markFavorite(property.id, is_favorite)}
+                    />
                 );
             })}
-            </>
+        </>
     );
-};  
+};
 
 export default PropertyList;
