@@ -8,7 +8,7 @@ import CustomButton from '../forms/CustomButton';
 import Categories from '../addproperty/Categories';
 
 import useAddPropertyModal from '@/app/hooks/useAddPropertyModal';
-import SelectCountry, {SelectCountryValue} from '../forms/SelectCountry';
+import SelectCountry, { SelectCountryValue } from '../forms/SelectCountry';
 
 import apiService from '@/app/services/apiService';
 import { useRouter } from 'next/navigation';
@@ -45,22 +45,26 @@ const AddPropertyModal = () => {
     const setImage = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             const tmpImage = event.target.files[0];
-            
-            // Validate image type
-            if (!tmpImage.type.startsWith('image/')) {
-                setErrors(['Please select a valid image file.']);
-                return;
-            }
-            
-            // Validate file size (e.g., max 10MB)
-            if (tmpImage.size > 10 * 1024 * 1024) {
-                setErrors(['Image file is too large. Please select an image smaller than 10MB.']);
-                return;
-            }
 
             setDataImage(tmpImage);
-            setErrors([]); // Clear any previous errors
         }
+    }
+
+    //
+    // Reset form
+
+    const resetForm = () => {
+        setCurrentStep(1);
+        setErrors([]);
+        setDataCategory('');
+        setDataTitle('');
+        setDataDescription('');
+        setDataPrice('');
+        setDataBedrooms('');
+        setDataBathrooms('');
+        setDataGuests('');
+        setDataCountry(undefined);
+        setDataImage(null);
     }
 
     //
@@ -89,43 +93,29 @@ const AddPropertyModal = () => {
             formData.append('country_code', dataCountry.value);
             formData.append('image', dataImage);
 
-            try {
-                const response = await apiService.post('/api/properties/create/', formData);
+            const response = await apiService.post('/api/properties/create/', formData);
 
-                if (response.success) {
-                    console.log('SUCCESS :-D');
+            if (response.success) {
+                console.log('SUCCESS :-D');
 
-                    router.push('/?added=true');
+                resetForm(); // Reset form fields
+                addPropertyModal.close();
 
-                    addPropertyModal.close();
-                } else {
-                    console.log('Error', response);
+                router.refresh(); // Force Next.js to re-fetch data
+                router.push('/?added=true');
+            } else {
+                console.log('Error', response);
 
-                    // Handle different error response formats
-                    let tmpErrors: string[] = [];
-                    if (response.error) {
-                        // response.error is now a dict, not a JSON string
-                        if (typeof response.error === 'object') {
-                            // Flatten the error object: {field: [errors]} -> ["field: error1", "field: error2"]
-                            Object.entries(response.error).forEach(([field, errors]) => {
-                                const errorArray = Array.isArray(errors) ? errors : [errors];
-                                errorArray.forEach((err: any) => {
-                                    tmpErrors.push(`${field}: ${err}`);
-                                });
-                            });
-                        } else {
-                            // Fallback for string errors
-                            tmpErrors = [String(response.error)];
-                        }
-                    } else {
-                        tmpErrors = Object.values(response).flat().map((err: any) => String(err));
+                const tmpErrors: string[] = Object.values(response).map((error: any) => {
+                    // If error is an object with a message property, extract it
+                    if (typeof error === 'object' && error !== null) {
+                        return error.message || JSON.stringify(error);
                     }
+                    // Otherwise convert to string
+                    return String(error);
+                })
 
-                    setErrors(tmpErrors.length > 0 ? tmpErrors : ['Failed to create property. Please try again.']);
-                }
-            } catch (error) {
-                console.error('Error submitting form:', error);
-                setErrors(['An error occurred while submitting the form. Please try again.']);
+                setErrors(tmpErrors)
             }
         }
     }
@@ -247,7 +237,7 @@ const AddPropertyModal = () => {
                     <h2 className='mb-6 text-2xl'>Location</h2>
 
                     <div className='pt-3 pb-6 space-y-4'>
-                        <SelectCountry 
+                        <SelectCountry
                             value={dataCountry}
                             onChange={(value) => setDataCountry(value as SelectCountryValue)}
                         />
