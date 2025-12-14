@@ -57,6 +57,49 @@ const SearchModal = () => {
     //
     // Contents
 
+    const contentLocation = (
+        <>
+            <h2 className="mb-6 text-2xl">Where do you want to go?</h2>
+
+            <SelectCountry
+                value={country}
+                onChange={(value) => setCountry(value as SelectCountryValue)}
+            />
+
+            <div className="mt-6 flex flex-row gap-4">
+                <CustomButton
+                    label="Check in date ->"
+                    onClick={() => searchModal.open('checkin')}
+                />
+            </div>
+        </>
+    )
+
+    const contentCheckin = (
+        <>
+            <h2 className="mb-6 text-2xl">When do you want to check in?</h2>
+
+            <DatePicker
+                value={dateRange}
+                onChange={(value) => _setDateRange(value.selection)}
+            />
+
+            <div className="mt-6 flex flex-row gap-4">
+                <CustomButton
+                    label="<- Location"
+                    onClick={() => searchModal.open('location')}
+                />
+
+                <CustomButton
+                    label="Check out date ->"
+                    onClick={() => searchModal.open('checkout')}
+                />
+            </div>
+        </>
+    )
+
+
+
     return (
         <Modal
             label="Search"
