@@ -121,6 +121,71 @@ const SearchModal = () => {
         </>
     )
 
+    const contentDetails = (
+        <>
+            <h2 className="mb-6 text-2xl">Details</h2>
+
+            <div className="space-y-4">
+                <div className="space-y-4">
+                    <label>Number of guests</label>
+                    <input
+                        type="number"
+                        min="1"
+                        value={numGuests}
+                        placeholder="Number of guests..."
+                        onChange={(e) => setNumGuests(e.target.value)}
+                        className="w-full h-14 px-4 border border-gray-300 rounded-xl"
+                    />
+                </div>
+
+                <div className="space-y-4">
+                    <label>Number of bedrooms</label>
+                    <input
+                        type="number"
+                        min="0"
+                        value={numBedrooms}
+                        placeholder="Number of bedrooms..."
+                        onChange={(e) => setNumBedrooms(e.target.value)}
+                        className="w-full h-14 px-4 border border-gray-300 rounded-xl"
+                    />
+                </div>
+
+                <div className="space-y-4">
+                    <label>Number of bathrooms</label>
+                    <input
+                        type="number"
+                        min="0"
+                        value={numBathrooms}
+                        placeholder="Number of bathrooms..."
+                        onChange={(e) => setNumBathrooms(e.target.value)}
+                        className="w-full h-14 px-4 border border-gray-300 rounded-xl"
+                    />
+                </div>
+            </div>
+
+            <div className="mt-6 flex flex-row gap-4">
+                <CustomButton
+                    label="<- Check out date"
+                    onClick={() => searchModal.open('checkout')}
+                />
+
+                <CustomButton
+                    label="Search"
+                    onClick={closeAndSearch}
+                />
+            </div>
+        </>
+    )
+
+    if (searchModal.step == 'location') {
+        content = contentLocation;
+    } else if (searchModal.step == 'checkin') {
+        content = contentCheckin;
+    } else if (searchModal.step == 'checkout') {
+        content = contentCheckout;
+    } else if (searchModal.step == 'details') {
+        content = contentDetails;
+    }
 
     return (
         <Modal
